@@ -1,39 +1,55 @@
 {
   "name": "DISTORT",
   "short_name": "DISTORT",
-  "start_url": "/",
+  "start_url": "/K80-Custom-OS/",
+  "scope": "/K80-Custom-OS/",
   "display": "standalone",
+  "orientation": "portrait",
   "icons": [
     {
-      "sizes": "114x114",
-      "src": "https://github.githubassets.com/assets/apple-touch-icon-114x114-09ce42d3ca4b.png"
-    },
-    {
-      "sizes": "120x120",
-      "src": "https://github.githubassets.com/assets/apple-touch-icon-120x120-92bd46d04241.png"
-    },
-    {
-      "sizes": "144x144",
-      "src": "https://github.githubassets.com/assets/apple-touch-icon-144x144-b882e354c005.png"
-    },
-    {
-      "sizes": "152x152",
-      "src": "https://github.githubassets.com/assets/apple-touch-icon-152x152-5f777cdc30ae.png"
-    },
-    {
-      "sizes": "180x180",
-      "src": "https://github.githubassets.com/assets/apple-touch-icon-180x180-a80b8e11abe2.png"
-    },
-    {
-      "sizes": "57x57",
-      "src": "https://github.githubassets.com/assets/apple-touch-icon-57x57-22f09f5b3a64.png"
-    },
-    {
-      "sizes": "60x60",
-      "src": "https://github.githubassets.com/assets/apple-touch-icon-60x60-19037ac897bf.png"
-    },
-    {
+      "src": "https://doobereats-create.github.io/K80-Custom-OS/icons/icon-72x72.png",
       "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "https://doobereats-create.github.io/K80-Custom-OS/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "https://doobereats-create.github.io/K80-Custom-OS/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "https://doobereats-create.github.io/K80-Custom-OS/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "https://doobereats-create.github.io/K80-Custom-OS/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "https://doobereats-create.github.io/K80-Custom-OS/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://doobereats-create.github.io/K80-Custom-OS/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": false,
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "description": "A game of Disinformation and how to Counter PsyOps"
+}
+
       "src": "https://github.githubassets.com/assets/apple-touch-icon-72x72-e090c8a282d0.png"
     },
     {
