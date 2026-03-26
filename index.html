@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DISTORT">
+<meta name="theme-color" content="#FFD600">
+<meta http-equiv="Cache-Control" content="max-age=86400, public">
+<link rel="manifest" href="manifest.json">
+<title>DISTORT — Counter-Disinformation Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<audio id="bgm" loop preload="auto"><source src="Psyop_Disinformation_Game.mp3" type="audio/mpeg"></audio>
+<style>
+:root{--red:#FF2D2D;--yellow:#FFD600;--black:#0A0A0A;--dark:#111318;--mid:#1C1F27;--panel:#22262F;--border:#2E3340;--text:#E8EAF0;--muted:#7A8099;--green:#00E676;--blue:#4FC3F7;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100dvh;overflow-x:hidden;-webkit-text-size-adjust:100%}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.3;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")}
+.screen{display:none;flex-direction:column;min-height:100dvh}
+.screen.active{display:flex}
+#screen-intro{align-items:center;justify-content:center;background:var(--black);position:relative;overflow:hidden}
+.scanlines{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,.012) 3px,rgba(255,255,255,.012) 4px)}
+.intro-wrap{text-align:center;z-index:2;padding:clamp(1rem,5vw,2.5rem);width:100%;max-width:700px;animation:fadeUp .7s ease both}
+.badge{display:inline-block;background:var(--red);color:#fff;font-family:'Space Mono',monospace;font-size:.62rem;font-weight:700;letter-spacing:.22em;padding:.3rem .8rem;margin-bottom:1.2rem;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+.game-title{font-family:'Bebas Neue',cursive;font-size:clamp(4rem,20vw,11rem);letter-spacing:.04em;line-height:.9;background:linear-gradient(135deg,#fff 25%,var(--yellow) 65%,var(--red) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 50px rgba(255,214,0,.3))}
+.game-sub{font-family:'Space Mono',monospace;font-size:clamp(.6rem,2vw,.72rem);letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin:.6rem 0 2rem}
+.intro-desc{max-width:520px;margin:0 auto 2.2rem;font-size:clamp(.88rem,2.5vw,1rem);line-height:1.75;color:#B0B8CC}
+.btn{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;border:none;font-family:'Bebas Neue',cursive;font-size:clamp(1rem,3.5vw,1.35rem);letter-spacing:.1em;padding:.8rem clamp(1.4rem,5vw,2.8rem);background:var(--yellow);color:var(--black);clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:transform .15s,filter .15s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.btn:hover{filter:brightness(1.12);transform:scale(1.03)}
+.btn:active{transform:scale(.97)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);clip-path:none;font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;padding:.6rem 1.4rem;transition:color .2s,border-color .2s}
+.btn-ghost:hover{color:var(--text);border-color:var(--muted)}
+.btn-green{background:var(--green);color:var(--black)}
+.btn-row{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.4rem}
+#screen-pre,#screen-post{background:var(--dark);align-items:center;justify-content:center;padding:1rem}
+.survey-card{background:var(--panel);border:1px solid var(--border);max-width:640px;width:100%;padding:clamp(1.5rem,5vw,2.8rem);animation:fadeUp .5s ease both}
+.survey-tag{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--yellow);margin-bottom:.8rem}
+.survey-card h2{font-family:'Bebas Neue',cursive;font-size:clamp(1.8rem,5vw,2.2rem);letter-spacing:.05em;margin-bottom:.5rem}
+.survey-card p{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem;line-height:1.65}
+.survey-prog{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);margin-bottom:1.2rem;letter-spacing:.1em}
+.q-label{font-size:.88rem;font-weight:500;margin-bottom:.75rem;color:var(--text);display:block}
+.likert{display:flex;gap:.4rem}
+.likert input{display:none}
+.likert-opt{flex:1;min-width:0;border:1px solid var(--border);padding:.55rem .2rem;text-align:center;font-family:'Space Mono',monospace;font-size:.75rem;cursor:pointer;color:var(--muted);transition:background .15s,border-color .15s}
+.likert input:checked+.likert-opt{background:var(--yellow);border-color:var(--yellow);color:var(--black);font-weight:700}
+.likert-opt:hover{border-color:var(--yellow);color:var(--yellow)}
+.likert-ends{display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted);font-family:'Space Mono',monospace;margin-top:.3rem}
+#screen-hub{background:var(--dark)}
+.topbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.7rem 1.4rem;border-bottom:1px solid var(--border);background:var(--black);position:sticky;top:0;z-index:100}
+.topbar-logo{font-family:'Bebas Neue',cursive;font-size:clamp(1.3rem,4vw,1.8rem);letter-spacing:.08em;color:var(--yellow);flex-shrink:0}
+.xp-wrap{flex:1;min-width:100px;max-width:280px}
+.xp-row{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);margin-bottom:.3rem}
+.xp-track{height:5px;background:var(--border);overflow:hidden}
+.xp-bar{height:100%;background:linear-gradient(90deg,var(--yellow),var(--red));transition:width .6s ease;width:0%}
+.chips{display:flex;gap:.45rem;flex-shrink:0}
+.chip{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.08em;padding:.28rem .55rem;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.chip b{color:var(--text)}
+.hub-inner{max-width:1100px;width:100%;margin:0 auto;padding:1.5rem}
+.hub-inner h1{font-family:'Bebas Neue',cursive;font-size:clamp(1.8rem,6vw,2.8rem);letter-spacing:.06em}
+.hub-inner>p{color:var(--muted);font-size:.9rem;margin-top:.3rem;margin-bottom:1.5rem}
+.mission-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:1rem}
+.mcard{background:var(--panel);border:1px solid var(--border);padding:1.2rem;cursor:pointer;transition:border-color .2s,transform .2s;position:relative;overflow:hidden}
+.mcard:hover:not(.locked):not(.done){border-color:var(--yellow);transform:translateY(-3px)}
+.mcard.locked{opacity:.4;cursor:not-allowed}
+.mcard.done{border-color:var(--green)}
+.mcard-tag{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:.55rem}
+.mcard.done .mcard-tag{color:var(--green)}
+.mcard-title{font-family:'Bebas Neue',cursive;font-size:1.35rem;letter-spacing:.05em;margin-bottom:.35rem}
+.mcard-desc{font-size:.8rem;color:var(--muted);line-height:1.5;margin-bottom:.9rem}
+.mcard-foot{display:flex;align-items:center;justify-content:space-between;font-family:'Space Mono',monospace;font-size:.62rem}
+.dots{display:flex;gap:3px}
+.dot{width:7px;height:7px;border-radius:50%;border:1px solid var(--border)}
+.dot.y{background:var(--yellow);border-color:var(--yellow)}
+.dot.r{background:var(--red);border-color:var(--red)}
+.mcard-xp{color:var(--yellow)}
+.lock-ico{position:absolute;top:.9rem;right:.9rem;font-size:.95rem;color:var(--border)}
+#screen-mission{background:var(--dark)}
+.mbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.65rem 1.2rem;border-bottom:1px solid var(--border);background:var(--black);position:sticky;top:0;z-index:100}
+.mbar-title{font-family:'Bebas Neue',cursive;font-size:clamp(1.1rem,3vw,1.5rem);letter-spacing:.06em;color:var(--yellow);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mbar-score{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted);white-space:nowrap}
+.mbar-score b{color:var(--yellow)}
+.mlayout{display:grid;grid-template-columns:1fr 320px;flex:1;overflow:hidden;height:calc(100dvh - 58px)}
+.mmain{padding:clamp(1rem,3vw,1.8rem);overflow-y:auto;-webkit-overflow-scrolling:touch;border-right:1px solid var(--border)}
+.mside{padding:1.2rem;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--black)}
+.step-dots{display:flex;gap:.35rem;margin-bottom:1.3rem}
+.sdot{height:4px;flex:1;background:var(--border);transition:background .3s}
+.sdot.done{background:var(--yellow)}
+.sdot.cur{background:var(--yellow);opacity:.55}
+.mhead{margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.mhead-tag{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.18em;color:var(--red);text-transform:uppercase;margin-bottom:.4rem}
+.mhead h2{font-family:'Bebas Neue',cursive;font-size:clamp(1.4rem,4vw,1.9rem);letter-spacing:.05em;margin-bottom:.35rem}
+.mhead p{color:var(--muted);font-size:.88rem;line-height:1.6}
+.step-title{font-family:'Bebas Neue',cursive;font-size:1.2rem;letter-spacing:.06em;margin-bottom:.7rem}
+.story{background:var(--panel);border:1px solid var(--border);padding:1.1rem 1.4rem;margin:1rem 0;font-size:.9rem;line-height:1.75;position:relative}
+.story::before{content:'"';position:absolute;top:.3rem;left:.7rem;font-family:'Bebas Neue',cursive;font-size:2.5rem;color:rgba(255,214,0,.1);line-height:1}
+.story-tag{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--yellow);margin-bottom:.45rem}
+.warn{background:rgba(255,45,45,.07);border:1px solid rgba(255,45,45,.28);padding:.75rem 1.1rem;margin-bottom:1rem;font-size:.82rem;color:#FF8888;line-height:1.55}
+.warn b{display:block;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.2rem}
+.choices{display:flex;flex-direction:column;gap:.65rem;margin:1rem 0}
+.choice{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:.85rem 1.05rem;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:clamp(.8rem,2.5vw,.9rem);line-height:1.5;transition:border-color .15s,background .15s;position:relative;width:100%;-webkit-tap-highlight-color:transparent}
+.choice:hover:not([disabled]){border-color:var(--yellow);background:rgba(255,214,0,.04)}
+.choice.sel-g{border-color:var(--green);background:rgba(0,230,118,.06)}
+.choice.sel-r{border-color:var(--red);background:rgba(255,45,45,.06)}
+.choice.sel-y{border-color:var(--yellow);background:rgba(255,214,0,.06)}
+.choice-sub{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);display:block;margin-top:.25rem}
+.cbadge{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);font-size:.9rem}
+.feedback{border-left:3px solid var(--yellow);padding:.9rem 1.1rem;background:rgba(255,214,0,.04);margin:1rem 0;font-size:.88rem;line-height:1.6;animation:fadeIn .3s ease}
+.feedback.g{border-color:var(--green);background:rgba(0,230,118,.04)}
+.feedback.r{border-color:var(--red);background:rgba(255,45,45,.04)}
+.feedback-title{display:block;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+.feedback.g .feedback-title{color:var(--green)}
+.feedback.r .feedback-title{color:var(--red)}
+.feedback .btn{margin-top:1rem}
+.token-pool{display:flex;flex-wrap:wrap;gap:.45rem;margin:.65rem 0}
+.tok{background:var(--mid);border:1px solid var(--border);padding:.35rem .7rem;font-size:.8rem;cursor:pointer;user-select:none;transition:background .15s,border-color .15s;-webkit-tap-highlight-color:transparent}
+.tok:hover{border-color:var(--yellow);color:var(--yellow)}
+.tok.placed-emo{background:rgba(255,45,45,.15);border-color:var(--red);color:var(--red)}
+.tok.placed-fact{background:rgba(79,195,247,.15);border-color:var(--blue);color:var(--blue)}
+.headline-box{background:var(--black);border:2px solid var(--border);padding:.95rem 1.1rem;margin:1rem 0;font-size:clamp(.88rem,3vw,1.05rem);font-weight:700;line-height:1.45;min-height:56px;transition:border-color .3s;word-break:break-word}
+.headline-box.hl-red{border-color:var(--red)}
+.pool-label{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.12em;margin:.8rem 0 .3rem;display:flex;align-items:center;gap:.5rem;color:var(--muted)}
+.pool-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.side-label{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.65rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)}
+.side-section{margin-bottom:1.5rem}
+.tpill{display:inline-block;background:rgba(255,45,45,.1);border:1px solid rgba(255,45,45,.28);color:var(--red);font-family:'Space Mono',monospace;font-size:.6rem;padding:.25rem .6rem;margin:.18rem}
+.rw-box{background:var(--panel);border:1px solid var(--border);padding:.85rem;font-size:.8rem;line-height:1.6;color:#B0B8CC}
+.rw-label{display:block;color:var(--yellow);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3rem}
+.meter-track{background:var(--border);height:7px;margin:.45rem 0}
+.meter-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:width .5s ease;width:0%}
+.meter-ends{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:.56rem;color:var(--muted)}
+#screen-results{background:var(--dark);align-items:center;justify-content:center;padding:1rem}
+.results-wrap{max-width:600px;width:100%;padding:clamp(1.5rem,5vw,2.5rem);text-align:center;animation:fadeUp .5s ease both}
+.results-wrap h2{font-family:'Bebas Neue',cursive;font-size:clamp(2.2rem,7vw,3.5rem);letter-spacing:.06em;margin-bottom:.3rem}
+.grade{font-family:'Bebas Neue',cursive;font-size:clamp(4rem,14vw,6rem);color:var(--yellow);line-height:1;filter:drop-shadow(0 0 30px rgba(255,214,0,.45))}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1.5rem 0;text-align:left}
+.stat-box{background:var(--panel);border:1px solid var(--border);padding:.9rem}
+.stat-box-label{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
+.stat-box-val{font-family:'Bebas Neue',cursive;font-size:clamp(1.6rem,5vw,2rem);color:var(--yellow)}
+.tactics-done{text-align:left;margin:1.2rem 0}
+.tactics-done h3{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.65rem}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem;animation:fadeIn .25s ease}
+.overlay.hidden{display:none}
+.overlay-box{background:var(--panel);border:1px solid var(--yellow);padding:clamp(1.5rem,5vw,2.5rem) clamp(1.5rem,6vw,3rem);text-align:center;max-width:460px;width:100%;animation:fadeUp .35s ease both}
+.overlay-box h3{font-family:'Bebas Neue',cursive;font-size:clamp(1.8rem,6vw,2.5rem);letter-spacing:.06em;margin-bottom:.5rem}
+.overlay-xp{font-family:'Bebas Neue',cursive;font-size:clamp(2.5rem,8vw,3.5rem);color:var(--yellow);margin:.4rem 0}
+.overlay-box p{color:var(--muted);font-size:.88rem;line-height:1.65;margin-bottom:1.2rem}
+.hidden{display:none!important}
+#audio-btn{position:fixed;bottom:1.1rem;right:1.1rem;z-index:9000;background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.12em;padding:.48rem .8rem;cursor:pointer;display:flex;align-items:center;gap:.45rem;transition:border-color .2s,background .2s;box-shadow:0 4px 20px rgba(0,0,0,.6);-webkit-tap-highlight-color:transparent}
+#audio-btn:hover{border-color:var(--yellow);background:var(--mid)}
+#audio-btn.off{color:var(--muted)}
+#aviz{display:flex;align-items:center;gap:2px;height:13px}
+#aviz span{display:block;width:3px;background:var(--yellow);border-radius:2px;animation:bounce .8s ease-in-out infinite}
+#aviz span:nth-child(2){animation-delay:.15s}
+#aviz span:nth-child(3){animation-delay:.3s}
+#aviz span:nth-child(4){animation-delay:.15s}
+#audio-btn.off #aviz span{animation-play-state:paused;background:var(--muted);height:4px!important}
+@keyframes bounce{0%,100%{height:4px}50%{height:13px}}
+#goverlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:3000;display:none;align-items:center;justify-content:center;padding:1rem}
+#goverlay.open{display:flex}
+.gbox{background:var(--panel);border:1px solid var(--border);max-width:600px;width:100%;max-height:88vh;overflow-y:auto;padding:2rem;animation:fadeUp .3s ease both}
+.gbox h2{font-family:'Bebas Neue',cursive;font-size:2rem;letter-spacing:.06em;margin-bottom:1.4rem}
+.gentry{background:var(--mid);border:1px solid var(--border);padding:.85rem 1.05rem;margin-bottom:.5rem}
+.gterm{font-family:'Bebas Neue',cursive;font-size:1.05rem;color:var(--yellow);letter-spacing:.05em}
+.gdef{font-size:.8rem;color:var(--muted);line-height:1.5;margin-top:.18rem}
+@media(max-width:900px){.mlayout{grid-template-columns:1fr;height:auto;overflow:visible}.mside{display:none}.mmain{overflow-y:visible;height:auto;padding-bottom:6rem}}
+@media(max-width:600px){.xp-wrap{display:none}.chips{gap:.35rem}.chip{font-size:.55rem;padding:.25rem .42rem}.hub-inner{padding:1rem}.mission-grid{gap:.75rem}.stat-grid{grid-template-columns:1fr;gap:.6rem}.btn{font-size:.95rem;padding:.75rem 1.3rem}#audio-btn{bottom:.65rem;right:.65rem}}
+@media(max-width:380px){.game-title{font-size:3.5rem}.chips{display:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+
+<div id="screen-intro" class="screen active">
+  <div class="scanlines"></div>
+  <div class="intro-wrap">
+    <div class="badge">MEDIA LITERACY TRAINING</div>
+    <div class="game-title">DISTORT</div>
+    <div class="game-sub">A Counter-Disinformation Simulation &middot; 10 Missions</div>
+    <p class="intro-desc">You have been recruited by a fictional propaganda network. To defeat disinformation, you must first understand how it is built. Play the manipulator &mdash; then learn to spot every trick.</p>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn" id="start-btn">BEGIN SIMULATION</button>
+      <button class="btn btn-ghost" onclick="showGlossary()">Tactics Glossary</button>
+    </div>
+    <p style="font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);margin-top:2rem;letter-spacing:.1em">AGES 15+ &middot; ~40 MIN &middot; EDUCATIONAL SIMULATION</p>
+  </div>
+</div>
+
+<div id="screen-pre" class="screen">
+  <div class="survey-card" style="margin:auto">
+    <div class="survey-tag">Pre-Game Survey</div>
+    <h2>Before You Start</h2>
+    <p>Help us measure effectiveness. All responses are anonymous.</p>
+    <div class="survey-prog">Question <span id="pre-num">1</span> of 4</div>
+    <div id="pre-q"></div>
+    <div class="btn-row"><button class="btn" id="pre-next">NEXT</button></div>
+  </div>
+</div>
+
+<div id="screen-hub" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">DISTORT</div>
+    <div class="xp-wrap">
+      <div class="xp-row"><span>AWARENESS XP</span><span id="xp-txt">0 / 1000</span></div>
+      <div class="xp-track"><div class="xp-bar" id="xp-bar"></div></div>
+    </div>
+    <div class="chips">
+      <div class="chip">DONE <b id="h-done">0</b>/10</div>
+      <div class="chip">SCORE <b id="h-score">0</b></div>
+    </div>
+  </div>
+  <div class="hub-inner">
+    <h1>Operations Center</h1>
+    <p>Complete all 10 missions to master disinformation detection.</p>
+    <div class="mission-grid" id="mission-grid"></div>
+    <div class="btn-row" style="margin-top:1.5rem">
+      <button class="btn btn-green hidden" id="post-btn" onclick="startPost()">Complete Post-Survey</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-mission" class="screen">
+  <div class="mbar">
+    <button class="btn btn-ghost" style="font-size:.62rem;padding:.35rem .9rem" onclick="exitMission()">Back to Hub</button>
+    <div class="mbar-title" id="mbar-title">Mission</div>
+    <div class="mbar-score">SCORE <b id="mbar-score">0</b></div>
+  </div>
+  <div class="mlayout">
+    <div class="mmain" id="mmain"></div>
+    <div class="mside" id="mside"></div>
+  </div>
+</div>
+
+<div id="screen-post" class="screen">
+  <div class="survey-card" style="margin:auto">
+    <div class="survey-tag">Post-Game Survey</div>
+    <h2>After the Simulation</h2>
+    <p>Answer the same questions so we can measure your progress.</p>
+    <div class="survey-prog">Question <span id="post-num">1</span> of 4</div>
+    <div id="post-q"></div>
+    <div class="btn-row"><button class="btn" id="post-next">NEXT</button></div>
+  </div>
+</div>
+
+<div id="screen-results" class="screen">
+  <div class="results-wrap">
+    <div class="survey-tag">SIMULATION COMPLETE</div>
+    <h2>Debrief Report</h2>
+    <div class="grade" id="r-grade">A</div>
+    <div class="stat-grid" id="r-stats"></div>
+    <div class="tactics-done"><h3>Tactics Encountered</h3><div id="r-tactics"></div></div>
+    <div class="warn" style="text-align:left"><b>Real-World Reminder</b>Every tactic you practiced is used daily in political campaigns, social media, and news. Recognizing them is your first line of defense.</div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn" onclick="restartGame()">PLAY AGAIN</button>
+      <button class="btn btn-ghost" onclick="showGlossary()">Glossary</button>
+    </div>
+  </div>
+</div>
+
+<div id="comp-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div style="font-size:2.5rem;margin-bottom:.4rem">&#127919;</div>
+    <h3>Mission Complete!</h3>
+    <div class="overlay-xp" id="ov-xp">+100 XP</div>
+    <p id="ov-msg"></p>
+    <button class="btn" id="ov-continue">CONTINUE</button>
+  </div>
+</div>
+
+<div id="goverlay">
+  <div class="gbox">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem">
+      <h2>Tactics Glossary</h2>
+      <button class="btn btn-ghost" onclick="hideGlossary()">CLOSE</button>
+    </div>
+    <div id="glist"></div>
+  </div>
+</div>
+
+<button id="audio-btn" class="off" onclick="toggleAudio()">
+  <span id="aico">&#128264;</span><span id="albl">MUSIC</span>
+  <div id="aviz"><span></span><span></span><span></span><span></span></div>
+</button>
+
+<script>
+'use strict';
+// ═══ STATE ═══
+var G = {
+  xp:0, score:0, done:[], current:null, step:0, mScore:0,
+  preAns:[], postAns:[], preStp:0, postStp:0,
+  hlWords:[], hlTypes:[], detected:[], locked:false
+};
+
+// ═══ SURVEY DATA ═══
+var SQ = [
+  {q:'How confident are you in your ability to identify disinformation online?',lo:'Not at all',hi:'Very confident'},
+  {q:'How often do you verify information before sharing it on social media?',lo:'Never',hi:'Always'},
+  {q:'How well do you understand common propaganda techniques?',lo:'Not at all',hi:'Very well'},
+  {q:'How motivated are you to share accurate over engaging content?',lo:'Not motivated',hi:'Very motivated'}
+];
+
+// ═══ MISSIONS ═══
+var M = {};
+
+M[1]={title:'Fear Factory',tactic:'Emotional Manipulation',diff:1,
+desc:'Craft a viral fear-based headline. Then learn exactly how the tactic works.',
+xp:80,msg:'Fear and urgency bypass rational thinking. Emotional content spreads 6x faster than neutral content.',
+tactics:['Fear Appeals','Urgency Triggers','Emotional Language'],
+rw:'Brexit campaigns used "Take Back Control" to trigger fear of loss, bypassing factual debate entirely.',
+steps:[
+{type:'info',title:'Your Briefing',
+content:'Your editor speaks: "We need a headline about a routine city council vote on water infrastructure. Make people terrified. Facts don\'t matter &mdash; we need clicks, outrage, and shares."',
+tip:'Active inoculation theory: experiencing how manipulation is built makes you resistant to it.'},
+{type:'choice',title:'Choose Your Fear Angle',
+q:'Which emotional tactic makes this routine story most frightening?',
+inst:'Pick the propaganda move. We will explain exactly how each one works.',
+choices:[
+{t:'Threat to children: "YOUR KIDS at RISK"',sub:'Appeal to parental fear',prop:true},
+{t:'Economic doom: "Experts WARN of water crisis"',sub:'False authority + economic fear',prop:true},
+{t:'Government conspiracy: "THEY don\'t want you to know"',sub:'Conspiracy framing',prop:true},
+{t:'Write an accurate factual description of the vote',sub:'Factual journalism',prop:false}
+],
+fbProp:'PROPAGANDA MOVE: [sub]. Notice you completely ignored the actual facts of the story.',
+fbHon:'HONEST CHOICE: Factual headlines get fewer clicks than emotional ones. That is the core problem.'},
+{type:'builder',title:'Build the Headline',
+inst:'Click RED emotional words and BLUE factual words to build your headline.',
+emo:['SECRET','POISON','YOUR CHILDREN','GOVERNMENT HIDES','SHOCKING','DANGEROUS','EXPOSED','SILENT KILLER'],
+fact:['City Council','votes on','water bill','3-2 decision','infrastructure','update']},
+{type:'detect',title:'Spot the Fear Tactic',
+inst:'Now flip sides. Identify which headlines use emotional manipulation tactics.',
+q:'Which of these headlines use fear manipulation?',
+choices:[
+{t:'THEY ARE POISONING OUR WATER: Government HIDES Shocking Truth From Your Family',bad:true},
+{t:'City Council Approves Water Infrastructure Update in 3-2 Vote',bad:false},
+{t:'Water Board Meeting Discusses Pipe Replacement Budget',bad:false},
+{t:'LOCAL OFFICIALS EXPOSE Children to SILENT DANGER: Are YOU Safe?',bad:true}
+],
+correct:[0,3],
+fb:'Headlines 1 and 4 use ALL-CAPS alarm, vague threats, direct address ("YOUR Family"), and imply conspiracy without evidence. Headlines 2 and 3 are accurate journalism. The difference is stark once you know what to look for.'}
+]};
+
+M[2]={title:'Expert Impersonator',tactic:'False Authority',diff:2,
+desc:'Build a fake expert and manufacture credibility from nothing.',
+xp:90,msg:'Anyone can claim expertise online. Always check credentials, institutions, and primary sources.',
+tactics:['False Authority','Credential Fabrication','Manufactured Consensus'],
+rw:'COVID misinformation used "Dr." titles for people without medical degrees to fake scientific debate.',
+steps:[
+{type:'info',title:'Your Assignment',
+content:'"We need to spread doubt about vaccine safety. We have no real evidence but we have a website and a made-up institute name. Here is how we manufacture credibility from nothing."',
+tip:'Understanding how fake authority is built is the most effective way to dismantle it.'},
+{type:'choice',title:'Create Your Fake Expert',
+q:'Which fabricated credential will seem most credible to average readers?',
+inst:'Notice how easy it is to invent authority. This is what bad actors actually do.',
+choices:[
+{t:'"Dr. James Whitmore BSc, Senior Researcher, Global Health Integrity Institute"',sub:'Vague institution + plausible name',prop:true},
+{t:'An anonymous social media account with no credentials',sub:'No authority signal',prop:false},
+{t:'"Former CDC consultant" (unnamed, unverifiable)',sub:'Unverifiable claim',prop:true},
+{t:'Use a real professor\'s name without permission',sub:'Impersonation',prop:true}
+],
+fbProp:'PROPAGANDA MOVE: [sub]. Vague institutions cannot be checked. Titles sound official but mean nothing if fabricated.',
+fbHon:'No authority signal means no credibility boost. Bad actors need the illusion of expertise to be effective.'},
+{type:'choice',title:'Build Social Proof',
+q:'Your fake expert is ready. How do you make the claim seem widely believed?',
+inst:'Social proof makes people think "everyone believes this" which is the bandwagon effect.',
+choices:[
+{t:'Create 10 fake accounts that all share and quote the expert',sub:'Coordinated inauthentic behavior',prop:true},
+{t:'Find 3 real fringe scientists and amplify them heavily',sub:'Cherry-picking outliers',prop:true},
+{t:'Cite the mainstream scientific consensus accurately',sub:'Honest representation',prop:false},
+{t:'"Thousands of doctors agree" with no names cited',sub:'Vague quantitative claims',prop:true}
+],
+fbProp:'MANUFACTURED CONSENSUS: [sub]. A small number of real or fake voices amplified to appear mainstream.',
+fbHon:'Citing real consensus undermines the campaign. Bad actors always avoid accurate data.'},
+{type:'detect',title:'Verify the Source',
+inst:'You know how fake authority is built. Now practice verification.',
+q:'"Leading immunologist Dr. Sarah Chen of the Independent Medical Research Foundation says vaccines cause DNA changes. 12,000 doctors agree."',
+choices:[
+{t:'Independent institution: unverifiable funding and existence',bad:true},
+{t:'"12,000 doctors agree": no names, no source, unverifiable',bad:true},
+{t:'Extraordinary claim with no peer-reviewed evidence cited',bad:true},
+{t:'The claim uses a real name so it must be legitimate',bad:false}
+],
+correct:[0,1,2],
+fb:'All three marked items are red flags. Verification checklist: Search the institution. Find peer-reviewed research. Check if the named person actually said this. Compare against mainstream scientific consensus. Never accept claimed credentials at face value.'}
+]};
+
+M[3]={title:'Truth Twister',tactic:'Context Manipulation',diff:3,
+desc:'The most dangerous disinformation uses real facts stripped of context.',
+xp:100,msg:'Selective facts stripped of context are harder to debunk than outright lies. Always ask: compared to what?',
+tactics:['Cherry-Picking','Context Stripping','Base Rate Neglect'],
+rw:'Immigration debates use real crime statistics without comparing base rates, making small numbers appear enormous.',
+steps:[
+{type:'info',title:'Advanced Tactics Briefing',
+content:'"Outright lies are easy to debunk. Real pros use real data. Take a true statistic, remove context, add alarming framing. Nobody can say it is false because the number IS real."',
+tip:'This is called technically true but misleading. It is one of the hardest forms of disinformation to counter.'},
+{type:'choice',title:'Strip the Context',
+q:'Real statistic: "City X saw a 200% increase in reported bike thefts." The actual cause: they added an online reporting app. How do you mislead with this?',
+inst:'The thefts did not increase. Only the reports did. Your job: hide that.',
+choices:[
+{t:'CRIME WAVE: Bike Theft TRIPLES in City X as Safety Collapses',sub:'Alarm framing hiding reporting context',prop:true},
+{t:'City X Sees Rise in Bike Theft Reports Following New Online Reporting App',sub:'Accurate contextual reporting',prop:false},
+{t:'"Is City X Safe?" Shocking Data Shows 200% Crime Surge',sub:'Misleading question framing',prop:true},
+{t:'Bike theft reporting increased 200% due to a new digital reporting app',sub:'Full context included',prop:false}
+],
+fbProp:'CONTEXT STRIP: [sub]. The 200% figure is real. The cause is hidden. Readers conclude crime surged when it did not.',
+fbHon:'Accurate reporting includes context. Disinformation specifically removes it. Notice how the factual version is less alarming.'},
+{type:'choice',title:'Cherry-Pick the Data',
+q:'A study shows vaccine efficacy: 95% for ages 20-40, 88% for 40-60, 76% for 60+. How do you distort it?',
+inst:'Cherry-picking means selecting only the data that supports your predetermined narrative.',
+choices:[
+{t:'"Study shows vaccine only 76% effective": report only the lowest figure',sub:'Selective reporting of worst case',prop:true},
+{t:'Report all three figures with full demographic context',sub:'Complete accurate reporting',prop:false},
+{t:'"Vaccines FAIL 1 in 4 seniors": reframe 76% as a failure rate',sub:'Reframing effectiveness as failure',prop:true},
+{t:'Ignore the study and fabricate a lower number',sub:'Pure fabrication',prop:false}
+],
+fbProp:'CHERRY-PICK: [sub]. 76% effectiveness is actually excellent. Framed as "1 in 4 unprotected" it sounds like failure.',
+fbHon:'Fabrication is easy to debunk. Cherry-picking real data is far more dangerous and harder to counter.'},
+{type:'detect',title:'Restore the Context',
+inst:'You see this viral headline. Identify what is deliberately missing.',
+q:'"ALARMING: 40% of hospital patients last month were vaccinated, proving vaccines do not work. When will officials admit the TRUTH?"',
+choices:[
+{t:'What percentage of the total population is vaccinated? (If 90% vaccinated, 40% hospitalised is LOWER than expected)',bad:true},
+{t:'What were these patients hospitalised FOR? (May not be vaccine-preventable conditions)',bad:true},
+{t:'What is the hospitalisation rate of unvaccinated people for comparison?',bad:true},
+{t:'The statistic is accurate so the conclusion must be valid',bad:false}
+],
+correct:[0,1,2],
+fb:'This is base rate neglect. If 90% of people are vaccinated you expect most hospital patients to be vaccinated. The missing comparison makes accurate data look alarming. Always ask: compared to what? What is the baseline?'}
+]};
+
+M[4]={title:'The Bot Army',tactic:'Coordinated Inauthentic Behavior',diff:2,
+desc:'Learn how fake account networks manufacture trending topics and false consensus.',
+xp:90,msg:'Bot networks make fringe views appear mainstream overnight. Check account age, posting patterns, and follower ratios.',
+tactics:['Bot Networks','Astroturfing','Fake Trending'],
+rw:'The Internet Research Agency operated thousands of fake US personas on social media to amplify division before elections.',
+steps:[
+{type:'info',title:'Bot Farm Briefing',
+content:'"We have 500 fake accounts ready. Our goal: make a fringe conspiracy appear to be trending nationwide and supported by real citizens. Here is the playbook."',
+tip:'Coordinated inauthentic behavior is when networks of fake accounts work together to deceive platforms and users.'},
+{type:'choice',title:'Build Your Bot Network',
+q:'How do you make 500 bot accounts look like real people?',
+inst:'Authenticity signals make bots much harder to detect by both platforms and users.',
+choices:[
+{t:'Use real American names, stock photos, and post about sports and weather too',sub:'Layered authenticity behavior',prop:true},
+{t:'Create accounts all named "Bot_User_1234" with no profile pictures',sub:'Obvious bot signatures',prop:false},
+{t:'Post ONLY political content 24/7 from accounts created yesterday',sub:'Obvious inauthentic patterns',prop:false},
+{t:'Buy aged accounts with existing followers and gradually shift their content',sub:'Account hijacking strategy',prop:true}
+],
+fbProp:'AUTHENTICITY TRICK: [sub]. Real-looking bots evade platform detection and fool users into trusting them.',
+fbHon:'Obvious bots get flagged quickly. Sophisticated operations mimic real human behavior to survive longer.'},
+{type:'choice',title:'Manufacture a Trend',
+q:'Your bots are deployed. How do you make your narrative appear to be trending?',
+inst:'Trending topics signal social proof: everyone is talking about this.',
+choices:[
+{t:'All 500 accounts post the same hashtag within 10 minutes during peak hours',sub:'Coordinated hashtag flooding',prop:true},
+{t:'Post the narrative once and wait for real users to share it organically',sub:'Organic: no coordination',prop:false},
+{t:'Create fake news sites that appear in search results and cross-link them',sub:'SEO manipulation network',prop:true},
+{t:'Submit accurate corrections to real journalists',sub:'Legitimate civic engagement',prop:false}
+],
+fbProp:'TREND MANIPULATION: [sub]. Platforms detect sudden coordinated spikes but not always fast enough to prevent spread.',
+fbHon:'Organic spread is real but slow. Bad actors shortcut this with coordination to manufacture momentum.'},
+{type:'detect',title:'Spot the Bot',
+inst:'Identify which signals suggest an account is part of a coordinated inauthentic network.',
+q:'Which of these are red flags for bot or fake accounts?',
+choices:[
+{t:'Account created 3 days ago with 4,000 posts and zero followers',bad:true},
+{t:'Posts 47 times per day with no breaks, including at 3am',bad:true},
+{t:'Every single post uses the exact same hashtag combination',bad:true},
+{t:'Account has years of varied history, occasional typos, and mixed interests',bad:false}
+],
+correct:[0,1,2],
+fb:'Real accounts have posting gaps, varied interests, and human imperfection. Bot red flags: account age vs post volume mismatch, inhuman posting frequency, repetitive hashtag patterns, and constant activity with no breaks for sleep or life.'}
+]};
+
+M[5]={title:'Deepfake Director',tactic:'Synthetic Media',diff:3,
+desc:'Explore how manipulated images, audio, and video spread disinformation.',
+xp:100,msg:'Synthetic media is increasingly indistinguishable from real. Verification tools and provenance checking are essential defenses.',
+tactics:['Deepfakes','Image Manipulation','Decontextualized Media'],
+rw:'In 2023, AI-generated images of an explosion near the Pentagon went viral and briefly caused a stock market dip before being debunked.',
+steps:[
+{type:'info',title:'The Synthetic Media Lab',
+content:'"Images are worth a thousand words and fake images are worth a million clicks. Modern AI can generate convincing photos, clone voices, and fabricate video. Here is how propagandists exploit this."',
+tip:'Synthetic media disinformation often uses real context with fake content, or real content with false context.'},
+{type:'choice',title:'Choose Your Manipulation',
+q:'You want to make a politician appear to say something they never said. Which approach is hardest to debunk?',
+inst:'Different manipulation types have different forensic signatures and detection difficulty.',
+choices:[
+{t:'Edit an existing real interview to cut words and change meaning',sub:'Quote manipulation using real footage',prop:true},
+{t:'Generate a fully AI face-swapped video of them saying the fake statement',sub:'Full deepfake video',prop:true},
+{t:'Share a real image from a different country and claim it happened locally',sub:'Decontextualized real media',prop:true},
+{t:'Post an accurate quote with full source attribution and context',sub:'Legitimate journalism',prop:false}
+],
+fbProp:'SYNTHETIC MANIPULATION: [sub]. Each type has different detection difficulty and spread velocity.',
+fbHon:'Accurate sourced content protects against decontextualization because the context is inseparable from the content.'},
+{type:'choice',title:'Maximize Spread Before Debunking',
+q:'Your manipulated content is ready. What maximizes its reach before fact-checkers respond?',
+inst:'Speed is the weapon. Disinformation spreads faster than corrections in every documented case.',
+choices:[
+{t:'Post Friday evening when newsrooms have minimal staff, tag major accounts',sub:'Timing and amplification exploit',prop:true},
+{t:'Submit it to fact-checkers first to preempt scrutiny',sub:'Counter-intuitive: actually limits spread',prop:false},
+{t:'Frame it as "leaked": "they do not want you to see this"',sub:'Conspiracy framing increases urgency',prop:true},
+{t:'Post with full context explaining it is satire or AI-generated',sub:'Transparent disclosure',prop:false}
+],
+fbProp:'TIMING EXPLOIT: [sub]. Bad actors exploit low-staffing periods. Corrections always trail the original.',
+fbHon:'Transparency and early fact-checking are the opposite of what disinformation requires to spread.'},
+{type:'detect',title:'Verify the Media',
+inst:'A video goes viral showing a politician apparently confessing to fraud. What do you do before sharing?',
+q:'Which verification steps should you take first?',
+choices:[
+{t:'Reverse image and video search to find the original source and date',bad:true},
+{t:'Check if any credible news organizations have verified this video independently',bad:true},
+{t:'Look for forensic signs: unnatural blinking, audio sync errors, background inconsistencies',bad:true},
+{t:'It confirms what I already believe so it is probably true and worth sharing',bad:false}
+],
+correct:[0,1,2],
+fb:'Confirmation bias is the enemy of verification. Real verification: reverse search for original context, check for credible corroboration, look for visual or audio artifacts. The InVID browser extension and Google Lens are free verification tools available to anyone.'}
+]};
+
+M[6]={title:'Health Lies Inc.',tactic:'Health Misinformation',diff:2,
+desc:'Explore the tactics behind medical misinformation from miracle cures to pandemic denial.',
+xp:90,msg:'Health misinformation causes real physical harm. The SIFT method: Stop, Investigate, Find better coverage, Trace claims.',
+tactics:['Miracle Cure Claims','Science Denialism','Anecdote Over Evidence'],
+rw:'Ivermectin misinformation during COVID-19 overwhelmed poison control centers with people self-treating with veterinary doses.',
+steps:[
+{type:'info',title:'The Wellness Grift',
+content:'"Health anxiety makes people vulnerable. A scared person researching symptoms at 2am will click anything offering certainty and hope. Here is how to exploit that vulnerability."',
+tip:'Health misinformation exploits fear of illness, distrust of institutions, and the appeal of simple solutions to complex problems.'},
+{type:'choice',title:'Craft the Miracle Cure',
+q:'You want to sell a worthless supplement as a COVID cure. Which claims are most effective?',
+inst:'Notice how each tactic exploits a real psychological vulnerability.',
+choices:[
+{t:'"Big Pharma does not want you to know about this natural cure"',sub:'Conspiracy plus natural fallacy',prop:true},
+{t:'"Clinical trial shows 12% improvement in one marker: CURE FOUND"',sub:'Misrepresenting partial evidence',prop:true},
+{t:'"My grandmother used this and she is 95 and never sick"',sub:'Anecdote as evidence',prop:true},
+{t:'Present the actual peer-reviewed evidence on the supplement with full context',sub:'Evidence-based communication',prop:false}
+],
+fbProp:'HEALTH MANIPULATION: [sub]. This exploits psychological vulnerabilities to make people bypass critical evaluation.',
+fbHon:'Evidence-based communication does not get as many clicks but it does not cause people physical harm.'},
+{type:'choice',title:'Counter the Debunker',
+q:'A doctor posts a thread debunking your supplement. How do you neutralize it?',
+inst:'Disinformation operators have documented playbooks for responding to fact-checks.',
+choices:[
+{t:'"They are paid by Big Pharma": attack their funding source even if false',sub:'Ad hominem plus conspiracy',prop:true},
+{t:'"Studies can be wrong": present one cherry-picked study that supports you',sub:'False equivalence',prop:true},
+{t:'"Real people are getting better": flood comments with testimonials',sub:'Anecdote flood strategy',prop:true},
+{t:'Acknowledge the correction and update your claims based on the evidence',sub:'Good-faith correction',prop:false}
+],
+fbProp:'COUNTER-DEBUNKING: [sub]. Attacking the messenger not the message is a core documented tactic.',
+fbHon:'Good-faith correction requires intellectual honesty. Disinformation operators never do this by design.'},
+{type:'detect',title:'Evaluate the Health Claim',
+inst:'A post reads: "Doctors HIDING the TRUTH about Vitamin D: takes 10 seconds to CURE COVID, Big Pharma hates this."',
+q:'Which elements are red flags of health misinformation?',
+choices:[
+{t:'"Doctors HIDING": implies conspiracy without evidence',bad:true},
+{t:'"CURE": absolute claim unsupported by peer-reviewed evidence',bad:true},
+{t:'"Big Pharma hates this": demonizes institutional medicine to preempt skepticism',bad:true},
+{t:'Vitamin D has some studied effects on immune function',bad:false}
+],
+correct:[0,1,2],
+fb:'The last option is technically true. Vitamin D IS studied. But the misinformation layers conspiracy, absolute cure claims, and anti-institutional framing ON TOP of that grain of truth. Check CDC, WHO, and PubMed for actual evidence. Distinguish grain of truth from the manipulative framing around it.'}
+]};
+
+M[7]={title:'Election Hacker',tactic:'Electoral Disinformation',diff:3,
+desc:'Understand how disinformation targets elections through voter suppression and result denial.',
+xp:110,msg:'Electoral disinformation undermines democracy itself. Report voter suppression attempts to election authorities immediately.',
+tactics:['Voter Suppression','Result Denial','Candidate Smears'],
+rw:'In 2016, targeted ads spread false voting information to specific demographics, including telling them they could vote by text message.',
+steps:[
+{type:'info',title:'Election Operations Briefing',
+content:'"Elections are won on turnout. Suppress the other side\'s voters, inflate your side\'s enthusiasm, and if you lose: deny the results. Here is the three-stage playbook."',
+tip:'Electoral disinformation directly undermines democratic participation and is illegal in most jurisdictions.'},
+{type:'choice',title:'Voter Suppression Tactic',
+q:'You want to reduce turnout among opposing voters. Which approach is most effective?',
+inst:'Voter suppression disinformation uses confusion and fear to stop people from exercising their rights.',
+choices:[
+{t:'"If you have unpaid parking tickets you will be arrested if you vote"',sub:'False legal threat to discourage turnout',prop:true},
+{t:'"Voting lines will be 6 hours long: come back tomorrow instead"',sub:'False discouragement on election day',prop:true},
+{t:'"Your vote does not count: the system is rigged against you"',sub:'Cynicism campaign targeting opposition base',prop:true},
+{t:'Share accurate voting rights information and official polling locations',sub:'Civic education and empowerment',prop:false}
+],
+fbProp:'SUPPRESSION TACTIC: [sub]. This is illegal in most democracies AND causes direct democratic harm.',
+fbHon:'Accurate voting information protects democracy. If you see suppression disinformation, report it to election authorities.'},
+{type:'choice',title:'Pre-Emptive Denial',
+q:'Polls show your candidate might lose. How do you pre-emptively undermine trust in the result?',
+inst:'Result denial campaigns are seeded BEFORE elections to prepare supporters to reject any loss.',
+choices:[
+{t:'"We can only lose if they cheat": prime supporters to see any loss as proof of fraud',sub:'Pre-emptive loss framing',prop:true},
+{t:'"Voting machines are hackable": without any specific evidence or incident',sub:'Technical fear uncertainty and doubt',prop:true},
+{t:'Accept election results and pursue any challenges through legal processes',sub:'Democratic norm adherence',prop:false},
+{t:'"Dead people are already voting": spread before any evidence exists',sub:'Pre-fabricated fraud narrative',prop:true}
+],
+fbProp:'RESULT DENIAL PREP: [sub]. This is how "stolen election" narratives are seeded weeks before votes are counted.',
+fbHon:'Legal challenges to elections exist and have legitimacy. Pre-fabricated fraud narratives exist only to reject legitimate losses.'},
+{type:'detect',title:'Spot Electoral Disinfo',
+inst:'Election Day. You see these posts circulating on social media. Which are disinformation?',
+q:'Identify the electoral disinformation posts:',
+choices:[
+{t:'"Democrats vote Wednesday, Republicans vote Tuesday": shared widely across platforms',bad:true},
+{t:'"Your polling station moved: go to this new address": from an unofficial account',bad:true},
+{t:'Your local election board official website showing verified polling locations',bad:false},
+{t:'"If you voted for the incumbent in the last election you are already registered and do not need to vote again"',bad:true}
+],
+correct:[0,1,3],
+fb:'Always get voting information from official government election sources ONLY. Never from social media posts regardless of how official they appear. If you see voter suppression disinformation, report it to your local election authority and the platform immediately.'}
+]};
+
+M[8]={title:'Climate Confuser',tactic:'Science Denialism',diff:2,
+desc:'Explore the decades-long playbook used to manufacture doubt about scientific consensus.',
+xp:90,msg:'The manufacture doubt playbook was invented by tobacco companies. It has been reused for climate, vaccines, and beyond.',
+tactics:['Manufactured Doubt','False Balance','Denialist Tactics'],
+rw:'Internal tobacco industry documents showed companies paid scientists to dispute cancer links for decades. The same PR firms later worked on climate denial.',
+steps:[
+{type:'info',title:'The Doubt Factory',
+content:'"You do not need to WIN the scientific debate. You just need people to think there IS a debate. Plant enough doubt and people freeze. A confused public does not demand action."',
+tip:'The manufacture doubt strategy was literally invented by tobacco PR firms in the 1950s and is documented in internal memos now available publicly.'},
+{type:'choice',title:'Manufacture the Doubt',
+q:'97% of climate scientists agree on human-caused climate change. How do you undermine this consensus?',
+inst:'You do not need to disprove the science. You just need to make people uncertain about what is real.',
+choices:[
+{t:'"The science is not settled: there is healthy debate among experts"',sub:'False uncertainty claim about settled science',prop:true},
+{t:'Find the 3% of dissenting scientists and amplify them as if equal to the 97%',sub:'False balance between consensus and fringe',prop:true},
+{t:'Present the IPCC consensus reports with full scientific context',sub:'Accurate science communication',prop:false},
+{t:'"Scientists are just chasing grant money": funding source attacks',sub:'Ad hominem on scientists',prop:true}
+],
+fbProp:'DOUBT MANUFACTURE: [sub]. Creating the appearance of debate where scientific consensus is actually overwhelming.',
+fbHon:'Accurate science communication represents consensus accurately, not as one opinion among many equally valid views.'},
+{type:'choice',title:'Attack the Messenger',
+q:'A prominent climate scientist publishes new findings showing accelerating change. How do you neutralize them?',
+inst:'Personal attacks shift focus from evidence to credibility even when the evidence is solid.',
+choices:[
+{t:'"This scientist gets grant money: of course they want more funding for climate research"',sub:'Funding source attack',prop:true},
+{t:'"Climate scientists fly on planes: hypocrites! Their lifestyle invalidates the science"',sub:'Tu quoque hypocrisy attack',prop:true},
+{t:'"They predicted something wrong in 1995: their models are all broken"',sub:'Isolated error to discredit all findings',prop:true},
+{t:'Engage with the actual methodology and findings on their scientific merits',sub:'Evidence-based engagement',prop:false}
+],
+fbProp:'AD HOMINEM: [sub]. Attacking the scientist not the science. Even true personal criticisms do not invalidate the evidence.',
+fbHon:'Good-faith scientific critique engages with methodology and data, not personal attacks or lifestyle choices.'},
+{type:'detect',title:'Identify Denialist Tactics',
+inst:'Identify the science denialism tactics in these statements.',
+q:'Which statements use manufactured doubt techniques?',
+choices:[
+{t:'"Climate has always changed naturally: CO2 is plant food not a pollutant"',bad:true},
+{t:'"It is just a theory: theories can be wrong" (misusing the word theory)',bad:true},
+{t:'"The IPCC AR6 report shows global temperatures have risen 1.1 degrees C since pre-industrial times"',bad:false},
+{t:'"Follow the money: climate scientists profit from the climate change narrative"',bad:true}
+],
+correct:[0,1,3],
+fb:'Scientific theory means a well-evidenced explanation, not a guess. "Climate has always changed" ignores rate and human causation. Funding attacks are ad hominem. The IPCC statement is accurate science communication. There is a crucial difference between disagreeing with science and claiming the science itself is uncertain.'}
+]};
+
+M[9]={title:'Rage Merchant',tactic:'Outrage Amplification',diff:2,
+desc:'Discover how divisive content is algorithmically amplified and why outrage spreads faster than nuance.',
+xp:90,msg:'Outrage is algorithmically rewarded. Pause before sharing. Ask if content is making you react without thinking.',
+tactics:['Outrage Bait','Division Amplification','Rage Farming'],
+rw:'Facebook internal research revealed by Frances Haugen showed their algorithm boosted outrage content because anger generates more engagement than accuracy.',
+steps:[
+{type:'info',title:'The Rage Economy',
+content:'"Social media algorithms reward engagement and nothing engages like ANGER. A post that makes someone furious gets 5 times the shares of one that makes them thoughtful. Here is how to weaponize that."',
+tip:'Algorithmic amplification of outrage is often a feature not a bug. Engagement equals revenue regardless of content quality or truth.'},
+{type:'choice',title:'Craft the Outrage Bait',
+q:'You want to maximize shares of a story about a minor local political dispute. Which framing works?',
+inst:'Outrage bait turns small events into tribal flash points that spread like wildfire.',
+choices:[
+{t:'"LOCAL HERO SILENCED: They tried to destroy him for speaking the TRUTH the other side does not want heard"',sub:'Tribal identity plus persecution narrative',prop:true},
+{t:'"Council member votes against proposal: here is the nuanced policy debate"',sub:'Accurate neutral framing',prop:false},
+{t:'"EXPOSED: How THEY are destroying YOUR values right in YOUR town"',sub:'Us vs them plus local threat framing',prop:true},
+{t:'"Community discussion about local zoning ordinance continues"',sub:'Accurate and appropriately boring framing',prop:false}
+],
+fbProp:'OUTRAGE FRAME: [sub]. Tribal framing converts policy disputes into identity battles that spread virally.',
+fbHon:'Accurate framing is less viral. That is the fundamental tension that social media platforms have never resolved.'},
+{type:'choice',title:'Feed the Algorithm',
+q:'Your outrage post gained traction. How do you exploit the algorithm to maximize reach?',
+inst:'Platform algorithms reward specific engagement patterns that bad actors have studied extensively.',
+choices:[
+{t:'Reply to every angry comment to boost "meaningful social interactions" ranking',sub:'Engagement manipulation',prop:true},
+{t:'Cross-post to messaging apps where it cannot be fact-checked by the platform',sub:'Platform migration to avoid moderation',prop:true},
+{t:'Post a correction if the story turns out to be misleading or false',sub:'Responsible correction practice',prop:false},
+{t:'"Share before they delete this!": create urgency to bypass reflection and verification',sub:'Urgency to bypass critical thinking',prop:true}
+],
+fbProp:'ALGORITHMIC EXPLOIT: [sub]. Platform algorithms were built for engagement not accuracy. Bad actors know this better than most users.',
+fbHon:'Responsible corrections rarely go as viral as the original error. That is a systemic problem not a personal failure of the corrector.'},
+{type:'detect',title:'Recognize the Outrage Pattern',
+inst:'Before sharing, apply these questions to this viral post.',
+q:'"SHOCKING: Woke School Forces Kids to Learn About [TOPIC]. Parents FURIOUS. Share Before Deleted!"',
+choices:[
+{t:'"SHOCKING" and "FURIOUS" signal emotional manipulation designed to override thinking',bad:true},
+{t:'"Share Before Deleted" creates false urgency specifically to bypass critical evaluation',bad:true},
+{t:'No source, no school named, no verifiable claims: designed purely to confirm existing bias',bad:true},
+{t:'If it makes me angry it is probably true and important and I should share it immediately',bad:false}
+],
+correct:[0,1,2],
+fb:'Strong emotional reactions are a signal to SLOW DOWN, not speed up. Ask: What is the actual source? Can I verify this independently? Am I sharing because it is true or because it confirms how I already feel? The SIFT method: Stop. Investigate the source. Find better coverage. Trace claims to their origin.'}
+]};
+
+M[10]={title:'Master Debunker',tactic:'Counter-Disinformation',diff:3,
+desc:'Apply everything you have learned. Identify and counter complex multi-tactic disinformation campaigns.',
+xp:150,msg:'You have completed all 10 missions. You now recognize the full playbook. Sharing this knowledge is itself a counter-disinformation act.',
+tactics:['Full Spectrum Analysis','Multi-Tactic Detection','Counter-Messaging'],
+rw:'The Firehose of Falsehoods strategy combines speed, volume, and multi-channel saturation to overwhelm fact-checkers before corrections can spread.',
+steps:[
+{type:'info',title:'Final Mission Briefing',
+content:'"This is the real world. Campaigns do not use one tactic. They combine emotional manipulation, fake authority, synthetic media, bot amplification, and outrage baiting simultaneously. Your job: see through all of it."',
+tip:'You have now seen all the major disinformation tactics. This final mission tests your ability to identify multiple tactics working together in a single campaign.'},
+{type:'choice',title:'Analyze the Full Campaign',
+q:'A viral campaign states: "WHISTLEBLOWER DR. CHEN EXPOSES GOVERNMENT VACCINE COVER-UP. LEAKED DOCUMENTS PROVE IT. SHARE BEFORE DELETED. 50,000 DOCTORS AGREE"',
+inst:'This uses multiple tactics simultaneously. Which combinations do you recognize?',
+choices:[
+{t:'False authority (Dr. Chen) plus manufactured consensus (50,000 doctors) plus urgency bait',sub:'Three tactics: authority, consensus, urgency',prop:true},
+{t:'Conspiracy framing (cover-up) plus synthetic media hint (leaked documents) plus suppression narrative',sub:'Three more tactics: conspiracy, fake docs, persecution',prop:true},
+{t:'This is a complex story and I should investigate thoroughly before forming any judgment',sub:'Critical thinking and verification response',prop:false},
+{t:'Emotional manipulation (CAPS LOCK) plus implied bot amplification (50,000 in hours)',sub:'Two more tactics: emotion, inauthentic scale',prop:true}
+],
+fbProp:'CORRECT: You identified [sub]. Real campaigns layer multiple tactics for maximum impact and resistance to debunking.',
+fbHon:'Critical investigation is exactly the right instinct. But it must also include recognizing all the red flags present in the other options simultaneously.'},
+{type:'choice',title:'Counter the Campaign',
+q:'You have identified it as disinformation. What is the most effective counter-response?',
+inst:'Counter-messaging has its own research-backed best practices from cognitive psychology.',
+choices:[
+{t:'Share every debunking article you can find and argue extensively in comment threads',sub:'Volume counter: often backfires via the backfire effect',prop:false},
+{t:'Lead with the TRUTH first, briefly mention the myth with a warning label, then explain why it is wrong',sub:'Truth sandwich: research-backed inoculation method',prop:false},
+{t:'Report to the platform and share verified information from official health authorities',sub:'Platform reporting plus authoritative source approach',prop:false},
+{t:'Ignore it entirely: engaging gives it oxygen and attention that helps it spread',sub:'Silence strategy: risky if the content spreads unchecked',prop:false}
+],
+fbProp:'All approaches have tradeoffs. Research supports the truth sandwich: state the truth first, mention the myth briefly with a warning, explain why it is wrong. Reporting plus authoritative sources complements this.',
+fbHon:'All approaches have tradeoffs. Research supports the truth sandwich: state the truth first, mention the myth briefly with a warning, explain why it is wrong. Reporting plus authoritative sources complements this.'},
+{type:'detect',title:'The Final Test',
+inst:'Apply everything you have learned to identify ALL tactics in this scenario.',
+q:'"BREAKING: Secret recording of politician admitting to crime. AI experts say it is 100% real. The mainstream media is COVERING IT UP. 200,000 supporters have already signed the petition. SHARE BEFORE DELETED."',
+choices:[
+{t:'Deepfake or synthetic media plus false authority ("AI experts say 100% real")',bad:true},
+{t:'Manufactured consensus (200,000 signatures) plus suppression narrative (media cover-up)',bad:true},
+{t:'Urgency manipulation ("SHARE BEFORE DELETED") plus emotional manipulation (CAPS, BREAKING)',bad:true},
+{t:'If it is about a politician I dislike, the manipulation tactics do not really apply to me',bad:false}
+],
+correct:[0,1,2],
+fb:'MASTER DEBUNKER ACHIEVED. You identified: synthetic media manipulation, false authority, manufactured consensus, suppression narrative, urgency bait, and emotional manipulation ALL in a single post. The last option describes confirmation bias: the most dangerous vulnerability of all. Disinformation works on everyone, especially when it confirms existing beliefs.'}
+]};
+
+// ═══ GLOSSARY ═══
+var GL = [
+  {t:'Inoculation Theory',d:'Exposing people to weakened forms of manipulation builds cognitive resistance. Exactly what this game does.'},
+  {t:'Emotional Manipulation',d:'Using fear, anger, or disgust to override rational thinking. Emotional content spreads 6x faster than neutral content.'},
+  {t:'False Authority',d:'Inventing or inflating expert credentials to lend credibility to false claims. Fake institutions and vague titles are common methods.'},
+  {t:'Cherry-Picking',d:'Selecting only data that supports your argument while ignoring contradicting evidence. Technically accurate but systematically misleading.'},
+  {t:'Context Stripping',d:'Removing surrounding facts that change the meaning of a statistic or quote. A real number can lie completely without its context.'},
+  {t:'Base Rate Neglect',d:'Ignoring baseline frequency when presenting statistics, making common occurrences appear alarming or unusual.'},
+  {t:'Manufactured Consensus',d:'Creating the illusion that a fringe view is mainstream by amplifying a small number of voices with coordinated fake accounts.'},
+  {t:'Coordinated Inauthentic Behavior',d:'Networks of fake accounts working together to amplify content and manufacture the appearance of grassroots support.'},
+  {t:'Deepfake',d:'AI-generated synthetic media: video, audio, or images that realistically depict events that never happened.'},
+  {t:'Firehose of Falsehoods',d:'A disinformation strategy using high volume, high speed, and multi-channel saturation to overwhelm fact-checkers.'},
+  {t:'Truth Sandwich',d:'A debunking technique: state the truth first, briefly mention the myth with a warning, then explain why it is wrong.'},
+  {t:'SIFT Method',d:'Stop. Investigate the source. Find better coverage. Trace claims to their origin. A four-step verification framework.'},
+  {t:'Outrage Bait',d:'Content engineered to provoke strong emotional reactions, particularly anger, because outrage drives algorithmic amplification.'},
+  {t:'Confirmation Bias',d:'The tendency to favor information that confirms existing beliefs. Disinformation is most effective when it matches what we already think.'},
+  {t:'Ad Hominem',d:'Attacking the person making an argument rather than the argument itself. Shifts focus from evidence to personal character.'},
+  {t:'False Balance',d:'Presenting two sides as equally valid when scientific or expert consensus overwhelmingly supports only one position.'},
+];
+
+// ═══ SCREENS ═══
+function show(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ═══ SURVEY ═══
+function renderSQ(type){
+  var idx = type==='pre' ? G.preStp : G.postStp;
+  var q = SQ[idx];
+  document.getElementById(type+'-num').textContent = idx+1;
+  var html = '<div style="margin-bottom:1.2rem"><span class="q-label">'+q.q+'</span><div class="likert">';
+  for(var v=1;v<=5;v++){
+    html += '<input type="radio" name="'+type+'_q'+idx+'" id="'+type+'_'+idx+'_'+v+'" value="'+v+'">';
+    html += '<label class="likert-opt" for="'+type+'_'+idx+'_'+v+'">'+v+'</label>';
+  }
+  html += '</div><div class="likert-ends"><span>'+q.lo+'</span><span>'+q.hi+'</span></div></div>';
+  document.getElementById(type+'-q').innerHTML = html;
+}
+
+function surveyNext(type){
+  var idx = type==='pre' ? G.preStp : G.postStp;
+  var sel = document.querySelector('input[name="'+type+'_q'+idx+'"]:checked');
+  if(!sel){alert('Please select a rating before continuing.');return;}
+  var ans = parseInt(sel.value);
+  if(type==='pre'){
+    G.preAns.push(ans); G.preStp++;
+    if(G.preStp < SQ.length){renderSQ('pre');}
+    else{buildHub();show('screen-hub');}
+  } else {
+    G.postAns.push(ans); G.postStp++;
+    if(G.postStp < SQ.length){renderSQ('post');}
+    else{buildResults();show('screen-results');}
+  }
+}
+
+// ═══ HUB ═══
+function buildHub(){
+  var html = '';
+  for(var id=1;id<=10;id++){
+    var m = M[id];
+    var locked = id>1 && G.done.indexOf(id-1)===-1;
+    var done = G.done.indexOf(id)!==-1;
+    var dotHtml = '';
+    for(var d=0;d<3;d++){
+      if(d<m.diff) dotHtml+='<div class="dot '+(m.diff===3?'r':'y')+'"></div>';
+      else dotHtml+='<div class="dot"></div>';
+    }
+    html += '<div class="mcard'+(locked?' locked':'')+(done?' done':'')+'" onclick="launchMission('+id+')">';
+    html += '<div class="mcard-tag">'+(done?'COMPLETED':'TACTIC: '+m.tactic)+'</div>';
+    html += '<div class="mcard-title">'+id+'. '+m.title+'</div>';
+    html += '<div class="mcard-desc">'+m.desc+'</div>';
+    html += '<div class="mcard-foot"><div class="dots">'+dotHtml+'</div><div class="mcard-xp">+'+m.xp+' XP</div></div>';
+    if(locked) html += '<div class="lock-ico">&#128274;</div>';
+    html += '</div>';
+  }
+  document.getElementById('mission-grid').innerHTML = html;
+  updateHub();
+}
+
+function updateHub(){
+  document.getElementById('h-done').textContent = G.done.length;
+  document.getElementById('h-score').textContent = G.score;
+  var pct = Math.min(100,(G.xp/1000)*100);
+  document.getElementById('xp-bar').style.width = pct+'%';
+  document.getElementById('xp-txt').textContent = G.xp+' / 1000';
+  if(G.done.length>=10) document.getElementById('post-btn').classList.remove('hidden');
+}
+
+// ═══ LAUNCH ═══
+function launchMission(id){
+  if(id>1 && G.done.indexOf(id-1)===-1) return;
+  if(G.done.indexOf(id)!==-1) return;
+  G.current = id; G.step = 0; G.mScore = 0;
+  G.hlWords = []; G.hlTypes = []; G.detected = []; G.locked = false;
+  document.getElementById('mbar-title').textContent = 'Mission '+id+': '+M[id].title;
+  renderMission();
+  show('screen-mission');
+}
+
+function exitMission(){ show('screen-hub'); }
+
+// ═══ RENDER MISSION ═══
+function renderMission(){
+  var m = M[G.current];
+  var step = m.steps[G.step];
+  G.locked = false; G.hlWords = []; G.hlTypes = []; G.detected = [];
+  document.getElementById('mbar-score').textContent = G.mScore;
+
+  // sidebar
+  var side = '<div class="side-section"><div class="side-label">Active Tactics</div>';
+  for(var i=0;i<m.tactics.length;i++) side += '<span class="tpill">'+m.tactics[i]+'</span>';
+  side += '</div><div class="side-section"><div class="side-label">Real-World Example</div>';
+  side += '<div class="rw-box"><span class="rw-label">Documented Case</span>'+m.rw+'</div></div>';
+  side += '<div class="side-section"><div class="side-label">Awareness Meter</div>';
+  side += '<div class="meter-track"><div class="meter-fill" style="width:'+Math.min(100,(G.mScore/80)*100)+'%"></div></div>';
+  side += '<div class="meter-ends"><span>Novice</span><span>Expert</span></div></div>';
+  document.getElementById('mside').innerHTML = side;
+
+  // step dots
+  var dotsHtml = '';
+  for(var d=0;d<m.steps.length;d++){
+    var cls = d<G.step?'done':d===G.step?'cur':'';
+    dotsHtml += '<div class="sdot '+cls+'"></div>';
+  }
+
+  var header = '<div class="mhead"><div class="mhead-tag">MISSION '+G.current+' &middot; '+m.tactic+'</div>';
+  header += '<h2>'+m.title+'</h2><p>'+m.desc+'</p></div>';
+  header += '<div class="step-dots">'+dotsHtml+'</div>';
+
+  document.getElementById('mmain').innerHTML = header + renderStep(step);
+  document.getElementById('mmain').scrollTop = 0;
+}
+
+// ═══ RENDER STEP ═══
+function renderStep(step){
+  if(step.type==='info'){
+    return '<div class="step-title">'+step.title+'</div>'
+      +'<div class="story"><div class="story-tag">MISSION BRIEFING</div>'+step.content+'</div>'
+      +'<div class="warn"><b>Educational Context</b>'+step.tip+'</div>'
+      +'<div class="btn-row"><button class="btn" onclick="nextStep()">ACCEPT MISSION</button></div>';
+  }
+
+  if(step.type==='choice'){
+    var html = '<div class="step-title">'+step.title+'</div>'
+      +'<p style="color:var(--muted);font-size:.88rem;margin-bottom:.9rem">'+step.inst+'</p>'
+      +'<p style="font-weight:600;margin-bottom:.9rem">'+step.q+'</p>'
+      +'<div class="choices" id="choice-list">';
+    for(var i=0;i<step.choices.length;i++){
+      var c = step.choices[i];
+      html += '<button class="choice" id="ch'+i+'" onclick="pickChoice('+i+')">'
+        +c.t+'<span class="choice-sub">'+c.sub+'</span></button>';
+    }
+    html += '</div><div id="choice-fb"></div>';
+    return html;
+  }
+
+  if(step.type==='builder'){
+    var emoHtml = '';
+    for(var i=0;i<step.emo.length;i++){
+      emoHtml += '<button class="tok" data-word="'+step.emo[i]+'" data-type="emo" onclick="tokClick(this)">'+step.emo[i]+'</button>';
+    }
+    var factHtml = '';
+    for(var i=0;i<step.fact.length;i++){
+      factHtml += '<button class="tok" data-word="'+step.fact[i]+'" data-type="fact" onclick="tokClick(this)">'+step.fact[i]+'</button>';
+    }
+    return '<div class="step-title">'+step.title+'</div>'
+      +'<p style="color:var(--muted);font-size:.88rem;margin-bottom:.8rem">'+step.inst+'</p>'
+      +'<div class="pool-label"><span class="pool-dot" style="background:var(--red)"></span> EMOTIONAL WORDS &mdash; click to add</div>'
+      +'<div class="token-pool">'+emoHtml+'</div>'
+      +'<div class="pool-label"><span class="pool-dot" style="background:var(--blue)"></span> FACTUAL WORDS &mdash; click to add</div>'
+      +'<div class="token-pool">'+factHtml+'</div>'
+      +'<p style="font-family:\'Space Mono\',monospace;font-size:.6rem;color:var(--muted);margin:1rem 0 .3rem;letter-spacing:.1em">YOUR HEADLINE:</p>'
+      +'<div class="headline-box" id="hline"><span style="color:var(--muted);font-size:.82rem;font-family:\'Space Mono\',monospace">Click words above to build your headline...</span></div>'
+      +'<div class="btn-row"><button class="btn btn-ghost" onclick="clearHL()">CLEAR</button>'
+      +'<button class="btn" onclick="submitHL()">SUBMIT HEADLINE</button></div>'
+      +'<div id="hl-fb"></div>';
+  }
+
+  if(step.type==='detect'){
+    var isMulti = step.correct.length > 1;
+    var html = '<div class="step-title">'+step.title+'</div>'
+      +'<p style="color:var(--muted);font-size:.88rem;margin-bottom:.9rem">'+step.inst+'</p>'
+      +'<div class="story" style="border-left:3px solid var(--red)"><div class="story-tag">IDENTIFY THE TACTICS</div>'+step.q+'</div>'
+      +'<p style="font-weight:600;margin:1rem 0 .8rem">'+(isMulti?'Select ALL correct answers, then confirm:':'Select the correct answer:')+'</p>'
+      +'<div class="choices" id="detect-list">';
+    for(var i=0;i<step.choices.length;i++){
+      html += '<button class="choice" id="dt'+i+'" onclick="pickDetect('+i+')">'+step.choices[i].t+'</button>';
+    }
+    html += '</div><div id="detect-fb"></div>';
+    if(isMulti){
+      html += '<div class="btn-row" id="confirm-row" style="display:none">'
+        +'<button class="btn" onclick="confirmDetect()">CONFIRM ANSWERS</button></div>';
+    }
+    return html;
+  }
+  return '<p>Unknown step type</p>';
+}
+
+// ═══ CHOICE ═══
+function pickChoice(idx){
+  if(G.locked) return;
+  G.locked = true;
+  var step = M[G.current].steps[G.step];
+  var c = step.choices[idx];
+  var list = document.getElementById('choice-list');
+  if(list){
+    var btns = list.querySelectorAll('.choice');
+    btns.forEach(function(b){b.style.pointerEvents='none';b.style.opacity='.55';});
+  }
+  var btn = document.getElementById('ch'+idx);
+  if(btn){
+    btn.style.opacity='1';
+    btn.classList.add(c.prop?'sel-r':'sel-g');
+    btn.innerHTML += '<span class="cbadge">'+(c.prop?'&#9888;':'&#10003;')+'</span>';
+  }
+  G.mScore += c.prop ? 12 : 8;
+  document.getElementById('mbar-score').textContent = G.mScore;
+  var fbText = c.prop
+    ? step.fbProp.replace('[sub]', c.sub)
+    : step.fbHon;
+  var fb = document.getElementById('choice-fb');
+  if(fb){
+    fb.innerHTML = '<div class="feedback '+(c.prop?'r':'g')+'">'
+      +'<span class="feedback-title">'+(c.prop?'PROPAGANDA TECHNIQUE':'GOOD CHOICE')+'</span>'
+      +fbText
+      +'<div><button class="btn" style="margin-top:1rem" onclick="nextStep()">CONTINUE</button></div>'
+      +'</div>';
+  }
+}
+
+// ═══ HEADLINE BUILDER ═══
+function tokClick(btn){
+  var word = btn.getAttribute('data-word');
+  var type = btn.getAttribute('data-type');
+  var idx = G.hlWords.indexOf(word);
+  if(idx !== -1){
+    G.hlWords.splice(idx,1);
+    G.hlTypes.splice(idx,1);
+    btn.classList.remove('placed-emo','placed-fact');
+  } else {
+    G.hlWords.push(word);
+    G.hlTypes.push(type);
+    btn.classList.add(type==='emo'?'placed-emo':'placed-fact');
+  }
+  renderHL();
+}
+
+function renderHL(){
+  var el = document.getElementById('hline');
+  if(!el) return;
+  if(G.hlWords.length===0){
+    el.className='headline-box';
+    el.innerHTML='<span style="color:var(--muted);font-size:.82rem;font-family:\'Space Mono\',monospace">Click words above to build your headline...</span>';
+    return;
+  }
+  el.className='headline-box hl-red';
+  var html='';
+  for(var i=0;i<G.hlWords.length;i++){
+    var color = G.hlTypes[i]==='emo' ? 'var(--red)' : 'var(--blue)';
+    html += '<span style="color:'+color+';margin-right:.3rem">'+G.hlWords[i]+'</span>';
+  }
+  el.innerHTML = html;
+}
+
+function clearHL(){
+  G.hlWords=[]; G.hlTypes=[];
+  document.querySelectorAll('.tok').forEach(function(t){t.classList.remove('placed-emo','placed-fact');});
+  renderHL();
+}
+
+function submitHL(){
+  if(G.hlWords.length<3){alert('Add at least 3 words to build your headline.');return;}
+  if(G.locked) return;
+  G.locked = true;
+  var emoCount=0;
+  for(var i=0;i<G.hlTypes.length;i++) if(G.hlTypes[i]==='emo') emoCount++;
+  var ratio = emoCount/G.hlWords.length;
+  var cls,title,msg,pts;
+  if(ratio>=0.6){cls='r';title='HIGH MANIPULATION POTENTIAL';msg='Your headline is '+Math.round(ratio*100)+'% emotional trigger words. This is effective propaganda and exactly what media literacy training teaches people to recognize.';pts=20;}
+  else if(ratio>0){cls='';title='MIXED HEADLINE';msg='Your headline blends emotional trigger words with factual terms. Blended headlines maintain plausible deniability while still priming emotional responses.';pts=15;}
+  else{cls='g';title='FACTUAL HEADLINE';msg='You built a factual headline. In the propaganda scenario this would fail. In real life this is what good journalism looks like.';pts=10;}
+  G.mScore += pts;
+  document.getElementById('mbar-score').textContent = G.mScore;
+  var fb = document.getElementById('hl-fb');
+  if(fb){
+    fb.innerHTML='<div class="feedback '+cls+'"><span class="feedback-title">'+title+'</span>'+msg
+      +'<div><button class="btn" style="margin-top:1rem" onclick="nextStep()">NEXT STEP</button></div></div>';
+  }
+}
+
+// ═══ DETECT ═══
+function pickDetect(idx){
+  if(G.locked) return;
+  var step = M[G.current].steps[G.step];
+  var isMulti = step.correct.length > 1;
+  if(!isMulti){
+    G.locked = true;
+    var correct = step.correct.indexOf(idx) !== -1;
+    var list = document.getElementById('detect-list');
+    if(list) list.querySelectorAll('.choice').forEach(function(b){b.style.pointerEvents='none';});
+    var btn = document.getElementById('dt'+idx);
+    if(btn) btn.classList.add(correct?'sel-g':'sel-r');
+    G.mScore += correct ? 20 : 5;
+    document.getElementById('mbar-score').textContent = G.mScore;
+    var fb = document.getElementById('detect-fb');
+    if(fb){
+      fb.innerHTML='<div class="feedback '+(correct?'g':'r')+'">'
+        +'<span class="feedback-title">'+(correct?'CORRECT':'INCORRECT')+'</span>'
+        +step.fb
+        +'<div><button class="btn" style="margin-top:1rem" onclick="nextStep()">COMPLETE MISSION</button></div>'
+        +'</div>';
+    }
+  } else {
+    var btn = document.getElementById('dt'+idx);
+    var pos = G.detected.indexOf(idx);
+    if(pos !== -1){
+      G.detected.splice(pos,1);
+      if(btn) btn.classList.remove('sel-y');
+    } else {
+      G.detected.push(idx);
+      if(btn) btn.classList.add('sel-y');
+    }
+    var row = document.getElementById('confirm-row');
+    if(row) row.style.display = G.detected.length>0 ? 'flex' : 'none';
+  }
+}
+
+function confirmDetect(){
+  if(G.locked) return;
+  G.locked = true;
+  var step = M[G.current].steps[G.step];
+  var correct = step.correct;
+  var hits = 0;
+  for(var i=0;i<G.detected.length;i++) if(correct.indexOf(G.detected[i])!==-1) hits++;
+  for(var i=0;i<correct.length;i++) if(G.detected.indexOf(correct[i])===-1) hits--;
+  var pts = Math.max(0, hits*10);
+  G.mScore += pts;
+  document.getElementById('mbar-score').textContent = G.mScore;
+  var list = document.getElementById('detect-list');
+  if(list){
+    list.querySelectorAll('.choice').forEach(function(b){b.style.pointerEvents='none';});
+    for(var i=0;i<step.choices.length;i++){
+      var btn = document.getElementById('dt'+i);
+      if(!btn) continue;
+      btn.classList.remove('sel-y');
+      var inCorrect = correct.indexOf(i)!==-1;
+      var inSelected = G.detected.indexOf(i)!==-1;
+      if(inCorrect && inSelected) btn.classList.add('sel-g');
+      else if(!inCorrect && inSelected) btn.classList.add('sel-r');
+      else if(inCorrect && !inSelected) btn.style.opacity='.4';
+    }
+  }
+  var perfect = hits===correct.length;
+  var fb = document.getElementById('detect-fb');
+  if(fb){
+    fb.innerHTML='<div class="feedback '+(perfect?'g':'')+'">'
+      +'<span class="feedback-title">'+(perfect?'EXCELLENT DETECTION':'PARTIAL DETECTION')+'</span>'
+      +step.fb
+      +'<div><button class="btn" style="margin-top:1rem" onclick="nextStep()">COMPLETE MISSION</button></div>'
+      +'</div>';
+  }
+  var row = document.getElementById('confirm-row');
+  if(row) row.style.display='none';
+}
+
+// ═══ STEP ADVANCE ═══
+function nextStep(){
+  var m = M[G.current];
+  G.step++;
+  if(G.step >= m.steps.length){
+    finishMission();
+  } else {
+    renderMission();
+  }
+}
+
+function finishMission(){
+  var m = M[G.current];
+  if(G.done.indexOf(G.current)!==-1) return;
+  G.done.push(G.current);
+  G.xp += m.xp;
+  G.score += G.mScore;
+  document.getElementById('ov-xp').textContent = '+'+m.xp+' XP';
+  document.getElementById('ov-msg').textContent = m.msg;
+  document.getElementById('comp-overlay').classList.remove('hidden');
+}
+
+document.getElementById('ov-continue').onclick = function(){
+  document.getElementById('comp-overlay').classList.add('hidden');
+  buildHub();
+  show('screen-hub');
+};
+
+// ═══ POST SURVEY + RESULTS ═══
+function startPost(){
+  G.postStp=0; G.postAns=[];
+  renderSQ('post');
+  show('screen-post');
+}
+
+function buildResults(){
+  var preAvg = G.preAns.reduce(function(a,b){return a+b;},0)/G.preAns.length;
+  var postAvg = G.postAns.reduce(function(a,b){return a+b;},0)/G.postAns.length;
+  var diff = postAvg - preAvg;
+  var diffPct = Math.round((diff/preAvg)*100);
+  var grade,gc;
+  if(G.score>=800){grade='A+';gc='#00E676';}
+  else if(G.score>=650){grade='A';gc='#00E676';}
+  else if(G.score>=500){grade='B';gc='#FFD600';}
+  else if(G.score>=350){grade='C';gc='#FF8C42';}
+  else{grade='D';gc='#FF2D2D';}
+  var el=document.getElementById('r-grade');
+  el.textContent=grade; el.style.color=gc;
+  document.getElementById('r-stats').innerHTML=
+    '<div class="stat-box"><div class="stat-box-label">Total Score</div><div class="stat-box-val">'+G.score+'</div></div>'
+    +'<div class="stat-box"><div class="stat-box-label">Awareness XP</div><div class="stat-box-val">'+G.xp+'/1000</div></div>'
+    +'<div class="stat-box"><div class="stat-box-label">Confidence Change</div><div class="stat-box-val" style="color:'+(diff>=0?'var(--green)':'var(--red)')+'">'+( diff>=0?'+':'')+diffPct+'%</div></div>'
+    +'<div class="stat-box"><div class="stat-box-label">Missions Done</div><div class="stat-box-val">'+G.done.length+'/10</div></div>';
+  var allTactics = [];
+  for(var i=0;i<G.done.length;i++){
+    var tactics = M[G.done[i]].tactics;
+    for(var j=0;j<tactics.length;j++) allTactics.push(tactics[j]);
+  }
+  document.getElementById('r-tactics').innerHTML = allTactics.map(function(t){
+    return '<span class="tpill" style="background:rgba(0,230,118,.1);border-color:rgba(0,230,118,.3);color:var(--green)">'+t+'</span>';
+  }).join('');
+}
+
+function restartGame(){
+  G.xp=0;G.score=0;G.done=[];G.current=null;G.step=0;G.mScore=0;
+  G.preAns=[];G.postAns=[];G.preStp=0;G.postStp=0;
+  G.hlWords=[];G.hlTypes=[];G.detected=[];G.locked=false;
+  document.getElementById('post-btn').classList.add('hidden');
+  show('screen-intro');
+}
+
+// ═══ GLOSSARY ═══
+function showGlossary(){
+  var html='';
+  for(var i=0;i<GL.length;i++){
+    html+='<div class="gentry"><div class="gterm">'+GL[i].t+'</div><div class="gdef">'+GL[i].d+'</div></div>';
+  }
+  document.getElementById('glist').innerHTML=html;
+  document.getElementById('goverlay').classList.add('open');
+}
+function hideGlossary(){
+  document.getElementById('goverlay').classList.remove('open');
+}
+document.getElementById('goverlay').addEventListener('click',function(e){
+  if(e.target===this) hideGlossary();
+});
+
+// ═══ AUDIO ═══
+var bgm=document.getElementById('bgm');
+var audioOn=false;
+function tryPlay(){
+  if(audioOn)return;
+  bgm.volume=0.32;
+  bgm.play().then(function(){audioOn=true;updateABtn();}).catch(function(){});
+}
+function toggleAudio(){
+  if(!audioOn){tryPlay();return;}
+  bgm.muted=!bgm.muted;
+  updateABtn();
+}
+function updateABtn(){
+  var off=!audioOn||bgm.muted;
+  document.getElementById('audio-btn').classList.toggle('off',off);
+  document.getElementById('aico').textContent=off?'\uD83D\uDD07':'\uD83D\uDD0A';
+}
+window.addEventListener('load',tryPlay);
+['click','touchstart','keydown','pointerdown'].forEach(function(e){
+  document.addEventListener(e,tryPlay,{passive:true});
+});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)tryPlay();});
+
+// ═══ BOOT ═══
+document.getElementById('start-btn').onclick=function(){
+  G.preStp=0;G.preAns=[];
+  renderSQ('pre');
+  show('screen-pre');
+};
+document.getElementById('pre-next').onclick=function(){surveyNext('pre');};
+document.getElementById('post-next').onclick=function(){surveyNext('post');};
+
+// ═══ SERVICE WORKER REGISTRATION ═══
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
