@@ -5,7 +5,7 @@ const CACHE = 'distort-v1';
 const ASSETS = [
   '/index.html',
   '/manifest.json'
-  // Add '/Psyop_Disinformation_Game.mp3' here if you want offline audio
+  '/Psyop_Disinformation_Game.mp3'
   // (note: large audio files will slow first install)
 ];
 
